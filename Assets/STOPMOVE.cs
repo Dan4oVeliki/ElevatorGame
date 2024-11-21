@@ -4,28 +4,39 @@ using Unity.PlasticSCM.Editor.WebApi;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-public class STOPMOVE : MonoBehaviour
+public class StopMove : MonoBehaviour
 {
     public Material mat;
-    public static int DistanceID = Shader.PropertyToID("direction");
-    public float currSpeed;
-    void Start()
-    { 
-    }
+    public static int DistanceID = Shader.PropertyToID("_Y");
+    public float currSpeed = 1.0f; // Initial speed
+    public bool dothat;
 
-    // Update is called once per frame
-    void Update()
+    private float targetSpeed = 0.0f; // Target speed to decelerate to
+    private float decelerationRate = 0.2f; // Higher value means quicker deceleration
+
+    void FixedUpdate()
     {
-        if (Input.GetMouseButtonDown(0)) {SlowDown();}
-    }
-    public void SlowDown()
-    {
-        while (currSpeed > 0)
+        if (Input.GetMouseButtonDown(0))
         {
-            mat.SetFloat(DistanceID, currSpeed - 0.001f);
-            Debug.Log("amongus");
+            dothat = true;
         }
-        mat.SetFloat(DistanceID, 0);
 
+        if (dothat)
+        {
+            // Gradually decrease `currSpeed` towards `targetSpeed`
+            currSpeed = Mathf.MoveTowards(currSpeed, targetSpeed, decelerationRate * Time.deltaTime);
+
+            // Update shader property
+            mat.SetFloat(DistanceID, currSpeed);
+
+            // Stop updating when `currSpeed` reaches `targetSpeed`
+            if (Mathf.Approximately(currSpeed, targetSpeed))
+            {
+                dothat = false; // Stop further updates
+                Debug.Log("Stopped moving");
+            }
+
+            Debug.Log($"Speed: {currSpeed}");
+        }
     }
 }
